@@ -4,12 +4,13 @@ nut_enabled: true
 
 # Scan for your UPS's values: `sudo nut-scanner -U`
 nut_ups_name: server-room-rack
-nut_ups_driver: nutdrv_qx
+#nut_ups_driver: nutdrv_qx
+#nut_ups_product: UPS
 nut_ups_description: "Server Room Lowell Power Rack UPS"
-nut_ups_port: auto
-nut_ups_vendorid: '0665'
-nut_ups_productid: '5161'
-nut_ups_bus: '001'
+#nut_ups_port: auto
+#nut_ups_vendorid: '0665'
+#nut_ups_productid: '5161'
+#nut_ups_bus: '001'
 nut_shutdown_finaldelay: '180'
 
 nut_ups_admin_user: admin
