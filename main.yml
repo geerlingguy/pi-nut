@@ -31,19 +31,44 @@
         name: nut
         state: present
 
+    - name: Run nut-scanner to gather UPS information
+      command: nut-scanner
+      register: nut_scanner_output
+      changed_when: false
+    
+    - name: Set UPS variables from nut-scanner output
+      set_fact:
+        nut_ups_driver: "{{ nut_scanner_output.stdout | regex_search('driver = \"(.*?)\"', '\\1') | first }}"
+        nut_ups_product: "{{ nut_scanner_output.stdout | regex_search('product = \"(.*?)\"', '\\1') | first }}"
+        nut_ups_port: "{{ nut_scanner_output.stdout | regex_search('port = \"(.*?)\"', '\\1') | first }}"
+        nut_ups_vendorid: "{{ nut_scanner_output.stdout | regex_search('vendorid = \"(.*?)\"', '\\1') | first }}"
+        nut_ups_productid: "{{ nut_scanner_output.stdout | regex_search('productid = \"(.*?)\"', '\\1') | first }}"
+        nut_ups_bus: "{{ nut_scanner_output.stdout | regex_search('bus = \"(.*?)\"', '\\1') | first }}"
+
+    - name: Fail if essential facts are missing
+      fail:
+        msg: "Failed to extract necessary UPS configuration facts from nut-scanner output!"
+      when: 
+        - nut_ups_driver is not defined
+        - nut_ups_product is not defined
+        - nut_ups_port is not defined
+        - nut_ups_vendorid is not defined
+        - nut_ups_productid is not defined
+        - nut_ups_bus is not defined
+
     - name: Change NUT UPS configuration.
       blockinfile:
         path: /etc/nut/ups.conf
         marker: "# {mark} ANSIBLE MANAGED BLOCK"
         block: |
           [{{ nut_ups_name }}]
-              driver = {{ nut_ups_driver }}
-              product = UPS
+              driver = "{{ nut_ups_driver }}"
+              product = "{{nut_ups_product}}"
               desc = "{{ nut_ups_description }}"
-              port = {{ nut_ups_port }}
-              vendorid = {{ nut_ups_vendorid }}
-              productid = {{ nut_ups_productid }}
-              bus = {{ nut_ups_bus }}
+              port = "{{ nut_ups_port }}"
+              vendorid = "{{ nut_ups_vendorid }}"
+              productid = "{{ nut_ups_productid }}"
+              bus = "{{ nut_ups_bus }}"
         state: present
         mode: 0640
       notify: restart nut-server
